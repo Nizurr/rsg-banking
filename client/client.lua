@@ -1,22 +1,20 @@
 local RSGCore = exports['rsg-core']:GetCoreObject()
 local BankOpen = false
-local SpawnedBankBilps = {}
 
 -------------------------------------------------------------------------------------------
 -- prompts and blips if needed
 -------------------------------------------------------------------------------------------
 Citizen.CreateThread(function()
-    for _,v in pairs(Config.BankLocations) do
+    for _, v in pairs(Config.BankLocations) do
         exports['rsg-core']:createPrompt(v.id, v.coords, RSGCore.Shared.Keybinds[Config.Keybind], 'Open '..v.name, {
             type = 'client',
             event = 'rsg-banking:client:OpenBanking',
         })
-        if v.showblip == true then    
-            local BankBlip = Citizen.InvokeNative(0x554D9D53F696D002, 1664425300, v.coords)
-            SetBlipSprite(BankBlip, joaat(v.blipsprite), true)
-            SetBlipScale(BankBlip, v.blipscale)
-            Citizen.InvokeNative(0x9CB1A1623062F402, BankBlip, v.name)
-            table.insert(SpawnedBankBilps, BankBlip)
+        if v.showblip == true then
+            local BankingBlip = Citizen.InvokeNative(0x554D9D53F696D002, 1664425300, v.coords)
+            SetBlipSprite(BankingBlip,  joaat(Config.Blip.blipSprite), true)
+            SetBlipScale(Config.Blip.blipScale, 0.2)
+            Citizen.InvokeNative(0x9CB1A1623062F402, BankingBlip, Config.Blip.blipName)
         end
     end
 end)
@@ -53,22 +51,6 @@ local OpenBank = function()
         end
     end)
 end
-
-CreateThread(function()
-    while true do
-        local hour = GetClockHours()
-        if (hour < Config.OpenTime) or (hour >= Config.CloseTime) then
-            for k, v in pairs(SpawnedBankBilps) do
-                Citizen.InvokeNative(0x662D364ABF16DE2F, v, joaat('BLIP_MODIFIER_MP_COLOR_2'))
-            end
-        else
-            for k, v in pairs(SpawnedBankBilps) do
-                Citizen.InvokeNative(0x662D364ABF16DE2F, v, joaat('BLIP_MODIFIER_MP_COLOR_8'))
-            end
-        end           
-        Wait(60000) -- every min
-    end       
-end)
 
 -- close bank
 local CloseBank = function()
